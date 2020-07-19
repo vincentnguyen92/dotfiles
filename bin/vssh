@@ -1,0 +1,102 @@
+#!/bin/bash
+
+DISPLAY_LIST=()
+SSH_FILES=()
+SSH_USER_NAMES=()
+SSH_IPS=()
+
+# Set to SSH_INFO
+init() {
+    for i in  ~/keys/*; do
+        base_name=$(get_file_name $i)
+        IFS=: read -a ssh_info <<< "${base_name}"
+
+        DISPLAY_LIST+=(${ssh_info[0]})
+        SSH_FILES+=(${i})
+
+        IFS=@ read -a server_info <<< "${ssh_info[1]}"
+        SSH_USER_NAMES+=(${server_info[0]})
+        SSH_IPS+=(${server_info[1]})
+    done
+}
+
+get_file_name() {
+    s=$1
+    s=${s##*/}
+    echo ${s%.*}
+}
+
+list_ssh_screen() {
+    local counting=1
+    for i in  ${DISPLAY_LIST[@]}; do
+        echo "${counting} - ${i}"
+        ((counting++))
+    done
+    echo "0 - Exit"
+}
+
+connect() {
+    if [[ ${DISPLAY_LIST[$1]} == *"(t)"* ]]; then
+        connect_via_tunnel $1
+    else
+        ssh -i ${SSH_FILES[$1]} "${SSH_USER_NAMES[$1]}@${SSH_IPS[$1]}"
+    fi
+}
+
+connect_via_tunnel() {
+    local tunnel_index=$(( $1 + 1 ))
+    local server_index=$1
+    local port=${2:-8888}
+
+    remove_tunnel "$port" && \
+    ssh -L 8888:${SSH_IPS[$server_index]}:22 -i ${SSH_FILES[$tunnel_index]} -f -N ${SSH_USER_NAMES[$tunnel_index]}@${SSH_IPS[$tunnel_index]} > /dev/null 2>&1 && \
+    ssh -i ${SSH_FILES[$server_index]} ${SSH_USER_NAMES[$server_index]}@127.0.0.1 -p "$port"
+}
+
+remove_tunnel() {
+    _clean_knownhosts_tunnel "$1" && _kill_process_with_port "$1";
+}
+
+_clean_knownhosts_tunnel() {
+    ssh-keygen -R [127.0.0.1]:"${1:-8888}" &> /dev/null;
+
+    return 0; # Always TRUE
+}
+
+_kill_process_with_port() {
+    kill $(lsof -t -i:"${1:-8888}") &> /dev/null;
+
+    return 0; # Always TRUE
+}
+
+main() {
+    init && list_ssh_screen
+
+    
+    while read choice; do
+        if [[ "$choice" == "0" || "$choice" == "q" ]]; then
+            echo "Bye bye...Vincent"
+            sleep 1
+            exit
+        fi
+
+        if [[ $choice =~ ^-?[0-9]+$ ]]; then
+            break
+        else
+            echo -n "Wrong...Choice again: "
+        fi
+    done
+
+    
+    if [ -z ${DISPLAY_LIST[(($choice - 1))]} ]; then
+        echo "SSH connection not found..!!!"
+        exit 1
+    fi
+
+    local index_choice=$(($choice - 1))
+
+    echo "Connecting to ${DISPLAY_LIST[$index_choice]} Server..."
+    connect $index_choice
+}
+
+main "$@"

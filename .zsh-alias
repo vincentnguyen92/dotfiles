@@ -3,6 +3,7 @@ alias down="cd ~/Downloads"
 alias dev="cd ~/Code"
 alias ..="cd .."
 alias ....="cd ../.."
+alias editHosts="sudo vim /etc/hosts"
 
 alias look="find . -name"
 alias search="grep --color -rnw ./ -e "

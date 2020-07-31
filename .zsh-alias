@@ -14,4 +14,6 @@ alias git="git -c http.sslVerify=false"
 alias gch="git checkout"
 alias xclip="xclip -selection c"
 
+alias artisan="php artisan"
+
 alias speedtest="curl -o /dev/null cachefly.cachefly.net/100mb.test"

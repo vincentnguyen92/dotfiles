@@ -96,5 +96,6 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=248'
 source $HOME/.zsh-theme
 source $HOME/.zsh-alias

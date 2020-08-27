@@ -11,7 +11,7 @@ fi
 # Path to your oh-my-zsh installation.
 export ZSH="/Users/vincent/.oh-my-zsh"
 export LC_ALL=en_US.UTF-8
-export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/flutter/bin:$HOME/bin:$PATH"
 
 precmd() {print ""}
 
